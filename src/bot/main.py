@@ -7,10 +7,13 @@ from dotenv import load_dotenv
 from database import init_db
 from handlers import router
 from scheduler import create_scheduler
+from database import get_all_active_searches
+from keyboards import listing_keyboard
 
-load_dotenv()
-
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
+print("=== СТАРТ ===")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+print(f"TOKEN = {BOT_TOKEN}")
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
@@ -18,6 +21,7 @@ dp.include_router(router)
 
 
 async def main():
+    print("=== ВОШЛИ В MAIN ===")
     print("🗄 Инициализация базы данных...")
     await init_db()
 
@@ -26,6 +30,22 @@ async def main():
     scheduler.start()
 
     print("🚗 CarHunter Bot запущен!")
+
+    # Уведомляем пользователей с активным поиском о рестарте
+    searches = await get_all_active_searches()
+    for search in searches:
+        await bot.send_message(
+            chat_id=search["user_id"],
+            text=(
+                f"🟢 <b>Бот перезапущен!</b>\n\n"
+                f"Твой поиск активен:\n"
+                f"🚘 {search['make']} {search['model']}\n\n"
+                f"Следующая проверка запустится автоматически."
+            ),
+            parse_mode="HTML",
+            reply_markup=listing_keyboard(),
+        )
+
     try:
         await dp.start_polling(bot)
     except Exception as e:
@@ -35,6 +55,5 @@ async def main():
         scheduler.shutdown()
         await bot.session.close()
 
-
 if __name__ == "__main__":
-    asyncio.run(main())
+ asyncio.run(main())
