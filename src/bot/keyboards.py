@@ -18,3 +18,14 @@ def skip_keyboard():
         resize_keyboard=True,
         one_time_keyboard=True,
     )
+
+
+def listing_keyboard():
+    """Кнопки управления под каждым объявлением."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="⛔ Стоп",             callback_data="action_stop"),
+            InlineKeyboardButton(text="🔄 Обновить сейчас", callback_data="action_refresh"),
+            InlineKeyboardButton(text="🔍 Новый поиск",     callback_data="action_new_search"),
+        ]
+    ])

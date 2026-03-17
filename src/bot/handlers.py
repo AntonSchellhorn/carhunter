@@ -4,7 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 from database import save_search, get_search, set_active
-from keyboards import confirm_keyboard, skip_keyboard
+from scheduler import check_new_listings
+from keyboards import confirm_keyboard, skip_keyboard, listing_keyboard
 from states import SearchForm
 
 router = Router()
@@ -174,6 +175,7 @@ async def confirm_search(callback: CallbackQuery, state: FSMContext):
         "Остановить: /stop",
         parse_mode="HTML",
     )
+    await check_new_listings(callback.bot)
     await callback.answer()
 
 
@@ -234,3 +236,36 @@ async def cmd_status(message: Message):
         f"🛣 Пробег до: <b>{search['mileage_max'] or '—'} км</b>",
         parse_mode="HTML",
     )
+
+# ─────────────────────────────────────────
+#  Кнопки под объявлениями
+# ─────────────────────────────────────────
+@router.callback_query(F.data == "action_stop")
+async def action_stop(callback: CallbackQuery):
+    await set_active(callback.from_user.id, False)
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(
+        "⛔ <b>Поиск остановлен.</b>\n\n"
+        "Настройки сохранены — запустить снова: /search",
+        parse_mode="HTML",
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "action_refresh")
+async def action_refresh(callback: CallbackQuery):
+    await callback.answer("🔄 Запускаю проверку...")
+    await check_new_listings(callback.bot)
+
+
+@router.callback_query(F.data == "action_new_search")
+async def action_new_search(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(
+        "🔍 Настраиваем новый поиск!\n\n"
+        "Шаг 1/6 — Введи <b>марку</b> автомобиля:\n"
+        "<i>Например: BMW, Volkswagen, Toyota</i>",
+        parse_mode="HTML",
+    )
+    await state.set_state(SearchForm.make)
+    await callback.answer()

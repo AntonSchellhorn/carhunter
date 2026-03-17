@@ -1,8 +1,11 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from datetime import datetime
 from aiogram import Bot
 
 from database import get_all_active_searches, add_seen_listing
+from keyboards import listing_keyboard
 from scraper import scrape_autoscout24
+
 
 
 async def check_new_listings(bot: Bot):
@@ -51,6 +54,7 @@ async def check_new_listings(bot: Bot):
                     ),
                     parse_mode="HTML",
                     disable_web_page_preview=False,
+                    reply_markup=listing_keyboard(),  # ← вот эта строка
                 )
 
         print(f"✅ Пользователь {user_id}: новых объявлений — {new_count}")
@@ -62,12 +66,12 @@ def create_scheduler(bot: Bot) -> AsyncIOScheduler:
     """
     scheduler = AsyncIOScheduler()
 
-    # Запускать check_new_listings каждые 30 минут
     scheduler.add_job(
         check_new_listings,
         trigger="interval",
         minutes=30,
         kwargs={"bot": bot},
+        next_run_time=datetime.now(),
     )
 
     return scheduler
