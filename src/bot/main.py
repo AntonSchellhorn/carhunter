@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from database import init_db
 from handlers import router
+from scheduler import create_scheduler
 
 load_dotenv()
 
@@ -19,6 +20,11 @@ dp.include_router(router)
 async def main():
     print("🗄 Инициализация базы данных...")
     await init_db()
+
+    print("⏰ Запуск планировщика...")
+    scheduler = create_scheduler(bot)
+    scheduler.start()
+
     print("🚗 CarHunter Bot запущен!")
     try:
         await dp.start_polling(bot)
@@ -26,6 +32,7 @@ async def main():
         print(f"❌ Бот остановлен из-за ошибки: {e}")
     finally:
         print("🛑 Бот остановлен")
+        scheduler.shutdown()
         await bot.session.close()
 
 
