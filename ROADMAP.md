@@ -1,65 +1,65 @@
 # 📍 CarHunter — Roadmap
 
-## Фаза 0 — Подготовка окружения ✅
-- [x] Установить VSCode
-- [x] Установить Python 3.11.9
-- [x] Создать папку проекта carhunter
-- [x] Создать виртуальное окружение venv
-- [x] Установить библиотеки (aiogram, playwright, apscheduler, aiosqlite)
-- [x] Создать репозиторий на GitHub
-- [x] Первый коммит
+## Phase 0 — Environment Setup ✅
+- [x] Install VSCode
+- [x] Install Python 3.11.9
+- [x] Create project folder carhunter
+- [x] Create virtual environment venv
+- [x] Install libraries (aiogram, playwright, apscheduler, aiosqlite)
+- [x] Create GitHub repository
+- [x] Initial commit
 
-## Фаза 1 — Telegram бот (скелет) ✅
-- [x] Создать бота через @BotFather
-- [x] Базовые команды /start /search /stop /status
-- [x] Приём параметров поиска от пользователя
-- [x] Сохранение настроек в SQLite
+## Phase 1 — Telegram Bot (Skeleton) ✅
+- [x] Create bot via @BotFather
+- [x] Basic commands /start /search /stop /status
+- [x] Accept search parameters from user
+- [x] Save settings to SQLite
 
-## Фаза 2 — Парсер AutoScout24 ✅
-- [x] Парсинг объявлений через Playwright
-- [x] Извлечение цены, пробега, года, ссылки
-- [x] Дедупликация — не слать одно объявление дважды
-- [x] Планировщик — запуск каждые 30 минут
-- [x] Немедленная проверка при запуске поиска
-- [x] Inline-кнопки под каждым объявлением
-- [x] Уведомление с кнопками при перезапуске бота
+## Phase 2 — AutoScout24 Parser ✅
+- [x] Parse listings via Playwright
+- [x] Extract price, mileage, year, URL
+- [x] Deduplication — never send the same listing twice
+- [x] Scheduler — run every 30 minutes
+- [x] Immediate check on search launch
+- [x] Inline control buttons under each listing
+- [x] Restart notification with control buttons
 
-## Фаза 3 — UX и управление 🔧
-- [ ] Меню команд /start через код (без BotFather)
-- [ ] Онбординг нового пользователя:
-  - [ ] Выбор языка (RU / DE / EN)
-  - [ ] Выбор сайтов поиска (AutoScout24 / Mobile.de / eBay)
-  - [ ] Настройка интервала проверки (1 мин — 24 ч, по умолчанию 30 мин)
-  - [ ] Выбор марки и модели из готового списка вместо ручного ввода
-  - [ ] Параметры поиска (год от/до, пробег до, цена до)
-- [x] Фильтрация объявлений по цене на стороне бота
-- [x] Фильтрация объявлений по пробегу на стороне бота
-- [x] Фильтрация объявлений по году на стороне бота
-- [x] Очистка истории при новом поиске
-- [x] Исправлен URL для моделей с пробелом (Golf Plus → golf-plus)
-- [ ] Кнопка ⚙️ Меню под каждым объявлением
-- [ ] Меню настроек (язык / сайты / интервал / параметры / статус)
+## Phase 3 — UX & Controls 🔧
+- [ ] Bot command menu via code (without BotFather)
+- [ ] New user onboarding:
+  - [ ] Language selection (RU / DE / EN)
+  - [ ] Search sites selection (AutoScout24 / Mobile.de / eBay)
+  - [ ] Check interval setting (1 min — 24 h, default 30 min)
+  - [ ] Make and model selection from list (no manual input)
+  - [ ] Search parameters (year from/to, max mileage, max price)
+- [x] Server-side price filtering (discard listings above price_max)
+- [x] Server-side mileage filtering (discard listings above mileage_max)
+- [x] Server-side year filtering (discard listings outside year range)
+- [x] Clear seen listings history on new search
+- [x] Fixed URL encoding for models with spaces (Golf Plus → golf-plus)
+- [ ] ⚙️ Menu button under each listing
+- [ ] Settings menu (language / sites / interval / parameters / status)
 
-## Фаза 4 — Охват площадок 🔧
-- [ ] Нормализация параметров между сайтами
-- [ ] Показывать время появления объявления
-- [ ] Парсер Mobile.de
-- [ ] Парсер eBay Kleinanzeigen
-- [ ] Выбор сайтов поиска пользователем
+## Phase 4 — Multi-Platform Coverage 🔧
+- [ ] Parameter normalization across sites
+- [ ] Show listing publication time
+- [ ] Mobile.de parser
+- [ ] eBay Kleinanzeigen parser
+- [ ] User-selectable search sites
 
-## Фаза 5 — Боевое развёртывание 🔧
-- [ ] Docker контейнер
-- [ ] Деплой на Hetzner VPS (бот работает 24/7)
+## Phase 5 — Production Deployment 🔧
+- [ ] Docker container
+- [ ] Deploy to Hetzner VPS (24/7 uptime)
 - [ ] GitHub Actions CI/CD
 
-## Фаза 6 — Монетизация 🔧
-- [ ] Система подписки Free / Pro
-- [ ] Ограничения для Free (1 поиск, 1 сайт, интервал мин. 30 мин)
-- [ ] Приём платежей через Telegram Stars
+## Phase 6 — Monetization 🔧
+- [ ] Free / Pro subscription system
+- [ ] Free tier limits (1 search, 1 site, min. 30 min interval)
+- [ ] Payments via Telegram Stars
 
-## Фаза 7 — Масштабирование 🔧
-- [ ] Переход с SQLite на PostgreSQL
-- [ ] Очередь задач для парсера
-- [ ] Автоочистка старых поисков и объявлений
-- [ ] Нагрузочное тестирование
-- [ ] Мониторинг сервера
+## Phase 7 — Scaling 🔧
+- [ ] Migrate from SQLite to PostgreSQL
+- [ ] Task queue for parser
+- [ ] Auto-cleanup of old searches and listings
+- [ ] Load testing
+- [ ] Server monitoring
