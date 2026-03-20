@@ -47,7 +47,12 @@ async def save_search(user_id, make, model, year_from, year_to, price_max, milea
                 is_active   = 1
         """, (user_id, make, model, year_from, year_to, price_max, mileage_max))
         await db.commit()
-
+        # Очищаем историю просмотренных при новом поиске
+        await db.execute(
+            "DELETE FROM seen_listings WHERE user_id = ?",
+            (user_id,)
+        )
+        await db.commit()
 
 async def get_search(user_id):
     """Возвращает настройки поиска пользователя или None."""

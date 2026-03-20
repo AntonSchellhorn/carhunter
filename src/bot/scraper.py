@@ -76,6 +76,25 @@ async def scrape_autoscout24(make: str, model: str, year_from: int = None,
                         if len(text) == 4 and text.isdigit() and 1990 <= int(text) <= 2026:
                             year = text
                             break
+                    # Фильтрация по цене
+                    if price_max and price != "—":
+                        price_num = int(re.sub(r'[^\d]', '', price))
+                        if price_num > price_max:
+                            continue
+
+                    # Фильтрация по пробегу
+                    if mileage_max and mileage != "—":
+                        mileage_num = int(re.sub(r'[^\d]', '', mileage))
+                        if mileage_num > mileage_max:
+                            continue
+                    # Фильтрация по году
+                    if year != "—":
+                        # Извлекаем только год из формата "01/2018" или "2018"
+                        year_num = int(year.split("/")[-1])
+                        if year_from and year_num < year_from:
+                            continue
+                        if year_to and year_num > year_to:
+                            continue
                    # Ссылка — берём по ID объявления
                     full_url = f"https://www.autoscout24.de/angebote/{listing_id}"
 
