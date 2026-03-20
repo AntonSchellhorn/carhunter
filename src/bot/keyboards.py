@@ -29,3 +29,14 @@ def listing_keyboard():
             InlineKeyboardButton(text="🔍 Новый поиск",     callback_data="action_new_search"),
         ]
     ])
+
+
+def language_keyboard():
+    """Кнопки выбора языка."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🇷🇺 Русский", callback_data="lang_ru"),
+            InlineKeyboardButton(text="🇩🇪 Deutsch", callback_data="lang_de"),
+            InlineKeyboardButton(text="🇬🇧 English", callback_data="lang_en"),
+        ]
+    ])

@@ -27,7 +27,10 @@
 ## Phase 3 — UX & Controls 🔧
 - [ ] Bot command menu via code (without BotFather)
 - [ ] New user onboarding:
-  - [ ] Language selection (RU / DE / EN)
+  - [x] Language selection keyboard (RU / DE / EN)
+  - [x] Translation system — locales.py (all texts in 3 languages)
+  - [x] Complete car makes/models database — makes.py (100+ brands)
+  - [x] Search parameters normalization — search_params.py (all 3 sites)
   - [ ] Search sites selection (AutoScout24 / Mobile.de / eBay)
   - [ ] Check interval setting (1 min — 24 h, default 30 min)
   - [ ] Make and model selection from list (no manual input)
@@ -37,6 +40,7 @@
 - [x] Server-side year filtering (discard listings outside year range)
 - [x] Clear seen listings history on new search
 - [x] Fixed URL encoding for models with spaces (Golf Plus → golf-plus)
+- [x] Language column added to database (default: DE)
 - [ ] ⚙️ Menu button under each listing
 - [ ] Settings menu (language / sites / interval / parameters / status)
 

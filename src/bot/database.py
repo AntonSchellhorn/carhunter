@@ -16,7 +16,8 @@ async def init_db():
                 year_to     INTEGER,
                 price_max   INTEGER,
                 mileage_max INTEGER,
-                is_active   INTEGER DEFAULT 0
+                is_active   INTEGER DEFAULT 0,
+                language    TEXT DEFAULT 'de'
             )
         """)
         # Таблица просмотренных объявлений — для дедупликации
@@ -102,3 +103,24 @@ async def add_seen_listing(user_id, listing_id) -> bool:
             return True   # Объявление новое!
         except aiosqlite.IntegrityError:
             return False  # Уже видели — пропускаем
+        
+async def get_language(user_id) -> str:
+    """Возвращает язык пользователя. По умолчанию 'de'."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute(
+            "SELECT language FROM searches WHERE user_id = ?", (user_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            return row[0] if row else "de"
+
+
+async def set_language(user_id, language):
+    """Сохраняет язык пользователя."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO searches (user_id, language)
+            VALUES (?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                language = excluded.language
+        """, (user_id, language))
+        await db.commit()
