@@ -3,9 +3,10 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
-from database import save_search, get_search, set_active
 from scheduler import check_new_listings
-from keyboards import confirm_keyboard, skip_keyboard, listing_keyboard
+from keyboards import confirm_keyboard, skip_keyboard, listing_keyboard, language_keyboard
+from database import save_search, get_search, set_active, set_language, get_language
+from locales import t
 from states import SearchForm
 
 router = Router()
@@ -17,15 +18,23 @@ router = Router()
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     await message.answer(
-        "🚗 Привет! Я <b>CarHunter Bot</b>!\n\n"
-        "Я ищу автомобили на AutoScout24 24/7 "
-        "и сообщаю, когда нахожу выгодное предложение.\n\n"
-        "Команды:\n"
-        "/search — настроить поиск\n"
-        "/stop — остановить поиск\n"
-        "/status — статус поиска",
+        "🌍 Выбери язык / Sprache wählen / Choose language:",
+        reply_markup=language_keyboard(),
+    )
+
+# ─────────────────────────────────────────
+#  Выбор языка
+# ─────────────────────────────────────────
+@router.callback_query(F.data.in_({"lang_ru", "lang_de", "lang_en"}))
+async def choose_language(callback: CallbackQuery):
+    lang = callback.data.split("_")[1]  # "lang_ru" → "ru"
+    await set_language(callback.from_user.id, lang)
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(
+        t(lang, "welcome"),
         parse_mode="HTML",
     )
+    await callback.answer()
 
 
 # ─────────────────────────────────────────

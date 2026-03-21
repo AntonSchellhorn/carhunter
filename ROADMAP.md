@@ -28,6 +28,7 @@
 - [ ] Bot command menu via code (without BotFather)
 - [ ] New user onboarding:
   - [x] Language selection keyboard (RU / DE / EN)
+  - [x] /start shows language selection on first launch
   - [x] Translation system — locales.py (all texts in 3 languages)
   - [x] Complete car makes/models database — makes.py (100+ brands)
   - [x] Search parameters normalization — search_params.py (all 3 sites)

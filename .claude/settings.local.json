@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(set PYTHONIOENCODING=utf-8)",
+      "Bash(\"C:\\\\Projets_PY_1\\\\carhunter\\\\venv\\\\Scripts\\\\python.exe\" -X utf8 main.py)",
+      "Bash(tasklist)",
+      "Bash(tasklist:*)",
+      "Bash(cmd.exe /c \"tasklist /FI \\\\\"IMAGENAME eq python.exe\\\\\" /FO TABLE\")"
+    ]
+  }
+}

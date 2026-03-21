@@ -29,7 +29,12 @@ async def init_db():
             )
         """)
         await db.commit()
-
+        # Миграция — добавляем колонку language если её нет
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN language TEXT DEFAULT 'de'")
+            await db.commit()
+        except Exception:
+            pass  # Колонка уже есть — всё хорошо
 
 async def save_search(user_id, make, model, year_from, year_to, price_max, mileage_max):
     """Сохраняет или обновляет настройки поиска пользователя."""
