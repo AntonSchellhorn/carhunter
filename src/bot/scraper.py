@@ -1,5 +1,5 @@
 from playwright.async_api import async_playwright
-
+import re
 
 async def scrape_autoscout24(make: str, model: str, year_from: int = None,
                               year_to: int = None, price_max: int = None,
@@ -63,7 +63,7 @@ async def scrape_autoscout24(make: str, model: str, year_from: int = None,
 
                     # Год — на AutoScout24 формат "01/2018" или "2018"
                     year = "—"
-                    import re
+                    
                     for span in all_spans:
                         text = await span.inner_text()
                         text = text.strip()

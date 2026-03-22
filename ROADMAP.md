@@ -25,7 +25,7 @@
 - [x] Restart notification with control buttons
 
 ## Phase 3 — UX & Controls 🔧
-- [ ] Bot command menu via code (without BotFather)
+- [x] Bot command menu via code (without BotFather)
 - [ ] New user onboarding:
   - [x] Language selection keyboard (RU / DE / EN)
   - [x] /start shows language selection on first launch
