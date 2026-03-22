@@ -36,6 +36,12 @@ async def init_db():
         except Exception:
             pass  # Колонка уже есть — всё хорошо
 
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN sites TEXT DEFAULT 'autoscout24'")
+            await db.commit()
+        except Exception:
+            pass  # Колонка уже есть — всё хорошо
+
 async def save_search(user_id, make, model, year_from, year_to, price_max, mileage_max):
     """Сохраняет или обновляет настройки поиска пользователя."""
     async with aiosqlite.connect(DB_PATH) as db:
@@ -129,3 +135,26 @@ async def set_language(user_id, language):
                 language = excluded.language
         """, (user_id, language))
         await db.commit()
+
+async def get_sites(user_id) -> list:
+    """Возвращает список сайтов пользователя. По умолчанию ['autoscout24']."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute(
+            "SELECT sites FROM searches WHERE user_id = ?", (user_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            if row and row[0]:
+                return row[0].split(",")  # "autoscout24,mobile" → ["autoscout24", "mobile"]
+            return ["autoscout24"]
+
+
+async def set_sites(user_id, sites: list):
+    """Сохраняет список сайтов пользователя."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO searches (user_id, sites)
+            VALUES (?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                sites = excluded.sites
+        """, (user_id, ",".join(sites)))  # ["autoscout24", "mobile"] → "autoscout24,mobile"
+        await db.commit()        

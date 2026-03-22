@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 from scheduler import check_new_listings
-from keyboards import confirm_keyboard, skip_keyboard, listing_keyboard, language_keyboard
-from database import save_search, get_search, set_active, set_language, get_language
+from keyboards import confirm_keyboard, skip_keyboard, listing_keyboard, language_keyboard, sites_keyboard
+from database import save_search, get_search, set_active, set_language, get_language, get_sites, set_sites
 from locales import t
 from states import SearchForm
 
@@ -203,6 +203,42 @@ async def restart_search(callback: CallbackQuery, state: FSMContext):
     await state.set_state(SearchForm.make)
     await callback.answer()
 
+# ─────────────────────────────────────────
+#  Выбор сайтов
+# ─────────────────────────────────────────
+@router.message(Command("sites"))
+async def cmd_sites(message: Message):
+    user_id = message.from_user.id
+    selected = await get_sites(user_id)
+    await message.answer(
+        "🌐 Выбери сайты для поиска:\n(нажимай чтобы включить/выключить)",
+        reply_markup=sites_keyboard(selected),
+    )
+
+
+@router.callback_query(F.data.startswith("site_"))
+async def toggle_site(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    site = callback.data.replace("site_", "")  # "site_mobile" → "mobile"
+    selected = await get_sites(user_id)
+
+    if site in selected:
+        if len(selected) == 1:
+            await callback.answer("⚠️ Должен быть выбран хотя бы один сайт!")
+            return
+        selected.remove(site)
+    else:
+        selected.append(site)
+
+    await set_sites(user_id, selected)
+    await callback.message.edit_reply_markup(reply_markup=sites_keyboard(selected))
+    await callback.answer()
+
+
+@router.callback_query(F.data == "sites_save")
+async def save_sites(callback: CallbackQuery):
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.answer("✅ Сайты сохранены!")
 
 # ─────────────────────────────────────────
 #  /stop

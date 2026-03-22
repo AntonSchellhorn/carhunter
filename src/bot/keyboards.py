@@ -40,3 +40,21 @@ def language_keyboard():
             InlineKeyboardButton(text="🇬🇧 English", callback_data="lang_en"),
         ]
     ])
+
+def sites_keyboard(selected: list):
+    """Клавиатура выбора сайтов с чекбоксами."""
+    def check(site):
+        return "✅" if site in selected else "☑️"
+
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text=f"{check('autoscout24')} AutoScout24", callback_data="site_autoscout24"),
+            InlineKeyboardButton(text=f"{check('mobile')} Mobile.de",       callback_data="site_mobile"),
+        ],
+        [
+            InlineKeyboardButton(text=f"{check('kleinanzeigen')} Kleinanzeigen", callback_data="site_kleinanzeigen"),
+        ],
+        [
+            InlineKeyboardButton(text="✅ Сохранить", callback_data="sites_save"),
+        ]
+    ])

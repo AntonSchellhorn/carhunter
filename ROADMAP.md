@@ -32,7 +32,7 @@
   - [x] Translation system — locales.py (all texts in 3 languages)
   - [x] Complete car makes/models database — makes.py (100+ brands)
   - [x] Search parameters normalization — search_params.py (all 3 sites)
-  - [ ] Search sites selection (AutoScout24 / Mobile.de / eBay)
+  - [x] Search sites selection (AutoScout24 / Mobile.de / Kleinanzeigen)
   - [ ] Check interval setting (1 min — 24 h, default 30 min)
   - [ ] Make and model selection from list (no manual input)
   - [ ] Search parameters (year from/to, max mileage, max price)
