@@ -1,6 +1,7 @@
 import asyncio
 import os
 from aiogram import Bot, Dispatcher
+from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import load_dotenv
 
@@ -19,6 +20,15 @@ bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 dp.include_router(router)
 
+async def set_commands(bot: Bot):
+    """Устанавливает меню команд бота."""
+    commands = [
+        BotCommand(command="start",  description="🌍 Выбрать язык / Start"),
+        BotCommand(command="search", description="🔍 Новый поиск"),
+        BotCommand(command="stop",   description="⛔ Остановить поиск"),
+        BotCommand(command="status", description="📊 Статус поиска"),
+    ]
+    await bot.set_my_commands(commands)
 
 async def main():
     print("=== ВОШЛИ В MAIN ===")
@@ -30,6 +40,8 @@ async def main():
     scheduler.start()
 
     print("🚗 CarHunter Bot запущен!")
+
+    await set_commands(bot)
 
     # Уведомляем пользователей с активным поиском о рестарте
     searches = await get_all_active_searches()
