@@ -58,3 +58,25 @@ def sites_keyboard(selected: list):
             InlineKeyboardButton(text="✅ Сохранить", callback_data="sites_save"),
         ]
     ])
+
+def interval_keyboard(selected: int):
+    """Клавиатура выбора интервала проверки."""
+    def check(minutes):
+        return "✅" if selected == minutes else ""
+
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text=f"{check(5)} 5 мин",   callback_data="interval_5"),
+            InlineKeyboardButton(text=f"{check(15)} 15 мин", callback_data="interval_15"),
+            InlineKeyboardButton(text=f"{check(30)} 30 мин", callback_data="interval_30"),
+        ],
+        [
+            InlineKeyboardButton(text=f"{check(60)} 1 час",   callback_data="interval_60"),
+            InlineKeyboardButton(text=f"{check(180)} 3 часа", callback_data="interval_180"),
+            InlineKeyboardButton(text=f"{check(360)} 6 часов",callback_data="interval_360"),
+        ],
+        [
+            InlineKeyboardButton(text=f"{check(720)} 12 часов", callback_data="interval_720"),
+            InlineKeyboardButton(text=f"{check(1440)} 24 часа", callback_data="interval_1440"),
+        ],
+    ])

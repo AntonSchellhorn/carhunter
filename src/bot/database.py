@@ -42,6 +42,18 @@ async def init_db():
         except Exception:
             pass  # Колонка уже есть — всё хорошо
 
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN interval INTEGER DEFAULT 30")
+            await db.commit()
+        except Exception:
+            pass  # Колонка уже есть — всё хорошо
+
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN last_checked_at REAL DEFAULT 0")
+            await db.commit()
+        except Exception:
+            pass  # Колонка уже есть — всё хорошо
+
 async def save_search(user_id, make, model, year_from, year_to, price_max, mileage_max):
     """Сохраняет или обновляет настройки поиска пользователя."""
     async with aiosqlite.connect(DB_PATH) as db:
@@ -157,4 +169,37 @@ async def set_sites(user_id, sites: list):
             ON CONFLICT(user_id) DO UPDATE SET
                 sites = excluded.sites
         """, (user_id, ",".join(sites)))  # ["autoscout24", "mobile"] → "autoscout24,mobile"
-        await db.commit()        
+        await db.commit()   
+
+
+async def get_interval(user_id) -> int:
+    """Возвращает интервал проверки в минутах. По умолчанию 30."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute(
+            "SELECT interval FROM searches WHERE user_id = ?", (user_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            return row[0] if row and row[0] else 30
+
+
+async def set_interval(user_id, minutes: int):
+    """Сохраняет интервал проверки пользователя."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO searches (user_id, interval)
+            VALUES (?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                interval = excluded.interval
+        """, (user_id, minutes))
+        await db.commit()
+
+
+async def update_last_checked(user_id):
+    """Обновляет время последней проверки — прямо сейчас."""
+    import time
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "UPDATE searches SET last_checked_at = ? WHERE user_id = ?",
+            (time.time(), user_id)
+        )
+        await db.commit()            

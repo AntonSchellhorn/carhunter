@@ -2,7 +2,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime
 from aiogram import Bot
 
-from database import get_all_active_searches, add_seen_listing
+from database import get_all_active_searches, add_seen_listing, update_last_checked
+import time
 from keyboards import listing_keyboard
 from scraper import scrape_autoscout24
 
@@ -21,6 +22,17 @@ async def check_new_listings(bot: Bot):
     print(f"👥 Активных поисков: {len(searches)}")
 
     for search in searches:
+
+        # Проверяем — пришло ли время для этого пользователя
+        interval_minutes = search.get("interval") or 30
+        last_checked = search.get("last_checked_at") or 0
+        elapsed = time.time() - last_checked
+        if elapsed < interval_minutes * 60:
+            print(f"⏳ Пользователь {search['user_id']}: ещё {int((interval_minutes * 60 - elapsed) / 60)} мин до проверки")
+            continue
+
+        await update_last_checked(search["user_id"])
+
         user_id = search["user_id"]
 
         # Запускаем парсер с параметрами этого пользователя
@@ -63,13 +75,15 @@ async def check_new_listings(bot: Bot):
 def create_scheduler(bot: Bot) -> AsyncIOScheduler:
     """
     Создаёт и возвращает планировщик.
+    Запускается каждую минуту — но проверяет только тех пользователей,
+    у которых вышел их личный интервал.
     """
     scheduler = AsyncIOScheduler()
 
     scheduler.add_job(
         check_new_listings,
         trigger="interval",
-        minutes=30,
+        minutes=1,
         kwargs={"bot": bot},
         next_run_time=datetime.now(),
     )

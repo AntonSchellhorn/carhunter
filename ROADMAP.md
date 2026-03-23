@@ -33,9 +33,10 @@
   - [x] Complete car makes/models database — makes.py (100+ brands)
   - [x] Search parameters normalization — search_params.py (all 3 sites)
   - [x] Search sites selection (AutoScout24 / Mobile.de / Kleinanzeigen)
-  - [ ] Check interval setting (1 min — 24 h, default 30 min)
+  - [x] Check interval setting (1 min — 24 h, default 30 min)
   - [ ] Make and model selection from list (no manual input)
   - [ ] Search parameters (year from/to, max mileage, max price)
+  - [ ] Search by radius from city (zip code + km)
 - [x] Server-side price filtering (discard listings above price_max)
 - [x] Server-side mileage filtering (discard listings above mileage_max)
 - [x] Server-side year filtering (discard listings outside year range)
@@ -61,6 +62,8 @@
 - [ ] Free / Pro subscription system
 - [ ] Free tier limits (1 search, 1 site, min. 30 min interval)
 - [ ] Payments via Telegram Stars
+- [ ] Free plan — minimum interval 30 min (ban protection)
+- [ ] Pro plan — minimum interval 5 min
 
 ## Phase 7 — Scaling 🔧
 - [ ] Migrate from SQLite to PostgreSQL
@@ -68,3 +71,6 @@
 - [ ] Auto-cleanup of old searches and listings
 - [ ] Load testing
 - [ ] Server monitoring
+- [ ] Task queue (Celery/RQ) for 10000+ users
+- [ ] Proxy rotation for scraping
+- [ ] Delays between requests to sites

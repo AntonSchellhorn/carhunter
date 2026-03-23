@@ -28,6 +28,7 @@ async def set_commands(bot: Bot):
         BotCommand(command="stop",   description="⛔ Остановить поиск"),
         BotCommand(command="status", description="📊 Статус поиска"),
         BotCommand(command="sites", description="🌐 Выбор сайтов поиска"),
+        BotCommand(command="interval", description="⏱ Интервал проверки"),
     ]
     await bot.set_my_commands(commands)
 

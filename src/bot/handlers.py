@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 from scheduler import check_new_listings
-from keyboards import confirm_keyboard, skip_keyboard, listing_keyboard, language_keyboard, sites_keyboard
-from database import save_search, get_search, set_active, set_language, get_language, get_sites, set_sites
+from keyboards import confirm_keyboard, skip_keyboard, listing_keyboard, language_keyboard, sites_keyboard, interval_keyboard
+from database import save_search, get_search, set_active, set_language, get_language, get_sites, set_sites, get_interval, set_interval
 from locales import t
 from states import SearchForm
 
@@ -239,6 +239,27 @@ async def toggle_site(callback: CallbackQuery):
 async def save_sites(callback: CallbackQuery):
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.answer("✅ Сайты сохранены!")
+
+# ─────────────────────────────────────────
+#  Выбор интервала
+# ─────────────────────────────────────────
+@router.message(Command("interval"))
+async def cmd_interval(message: Message):
+    user_id = message.from_user.id
+    selected = await get_interval(user_id)
+    await message.answer(
+        "⏱ Выбери интервал проверки объявлений:",
+        reply_markup=interval_keyboard(selected),
+    )
+
+
+@router.callback_query(F.data.startswith("interval_"))
+async def choose_interval(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    minutes = int(callback.data.replace("interval_", ""))  # "interval_30" → 30
+    await set_interval(user_id, minutes)
+    await callback.message.edit_reply_markup(reply_markup=interval_keyboard(minutes))
+    await callback.answer(f"✅ Интервал сохранён: {minutes} мин")
 
 # ─────────────────────────────────────────
 #  /stop
