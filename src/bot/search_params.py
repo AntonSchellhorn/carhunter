@@ -129,4 +129,44 @@ NOT_AVAILABLE_ON_KLEINANZEIGEN = [
     "DOORS",
     "SEATS",
     "POWER_RANGES",
+    "DAMAGE",
+    "TUV",
+    "COUNTRIES",
 ]
+
+# ─────────────────────────────────────────
+# Аварийность
+# ─────────────────────────────────────────
+DAMAGE = {
+    "Unfallfrei":   {"autoscout24": "0", "mobile": "NO_DAMAGE",  "kleinanzeigen": None},
+    "Mit Schäden":  {"autoscout24": "1", "mobile": "DAMAGED",    "kleinanzeigen": None},
+}
+
+# ─────────────────────────────────────────
+# TÜV (техосмотр)
+# ─────────────────────────────────────────
+TUV = {
+    "Neu (12+ мес)":  {"autoscout24": "12", "mobile": None, "kleinanzeigen": None},
+    "6+ месяцев":     {"autoscout24": "6",  "mobile": None, "kleinanzeigen": None},
+    "Abgelaufen":     {"autoscout24": "0",  "mobile": None, "kleinanzeigen": None},
+}
+
+# ─────────────────────────────────────────
+# Минимальная цена
+# ─────────────────────────────────────────
+# Используется параметр pricefrom= в URL
+# (price_max уже есть в основных параметрах поиска)
+
+# ─────────────────────────────────────────
+# Страна продажи
+# ─────────────────────────────────────────
+COUNTRIES = {
+    "Deutschland":  {"autoscout24": "D",  "mobile": "de", "kleinanzeigen": None},
+    "Österreich":   {"autoscout24": "A",  "mobile": "at", "kleinanzeigen": None},
+    "Schweiz":      {"autoscout24": "CH", "mobile": "ch", "kleinanzeigen": None},
+    "Niederlande":  {"autoscout24": "NL", "mobile": None, "kleinanzeigen": None},
+    "Belgien":      {"autoscout24": "B",  "mobile": None, "kleinanzeigen": None},
+    "Frankreich":   {"autoscout24": "F",  "mobile": None, "kleinanzeigen": None},
+    "Italien":      {"autoscout24": "I",  "mobile": None, "kleinanzeigen": None},
+    "Spanien":      {"autoscout24": "E",  "mobile": None, "kleinanzeigen": None},
+}

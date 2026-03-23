@@ -57,6 +57,7 @@
 - [ ] Docker container
 - [ ] Deploy to Hetzner VPS (24/7 uptime)
 - [ ] GitHub Actions CI/CD
+- [ ] Remove all debug print() statements
 
 ## Phase 6 — Monetization 🔧
 - [ ] Free / Pro subscription system
