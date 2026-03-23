@@ -4,8 +4,16 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 from scheduler import check_new_listings
-from keyboards import confirm_keyboard, skip_keyboard, listing_keyboard, language_keyboard, sites_keyboard, interval_keyboard
-from database import save_search, get_search, set_active, set_language, get_language, get_sites, set_sites, get_interval, set_interval
+from keyboards import (
+confirm_keyboard, skip_keyboard, 
+listing_keyboard, language_keyboard, sites_keyboard, 
+interval_keyboard, make_letter_keyboard, make_select_keyboard, 
+model_select_keyboard
+)
+from database import (
+save_search, get_search, set_active, 
+set_language, get_language, get_sites, set_sites, get_interval, set_interval
+)
 from locales import t
 from states import SearchForm
 
@@ -44,36 +52,84 @@ async def choose_language(callback: CallbackQuery):
 async def cmd_search(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
-        "🔍 Настраиваем поиск!\n\n"
-        "Шаг 1/6 — Введи <b>марку</b> автомобиля:\n"
-        "<i>Например: BMW, Volkswagen, Toyota</i>",
-        parse_mode="HTML",
-        reply_markup=ReplyKeyboardRemove(),
+        "🔍 Шаг 1 — Выбери первую букву марки:",
+        reply_markup=make_letter_keyboard(),
     )
-    await state.set_state(SearchForm.make)
+    await state.set_state(SearchForm.make_letter)
 
 
-@router.message(SearchForm.make)
-async def process_make(message: Message, state: FSMContext):
-    await state.update_data(make=message.text.strip())
-    await message.answer(
-        "Шаг 2/6 — Введи <b>модель</b>:\n"
-        "<i>Например: 3 Series, Golf, Camry</i>",
+@router.callback_query(F.data.startswith("letter_"), SearchForm.make_letter)
+async def choose_letter(callback: CallbackQuery, state: FSMContext):
+    letter = callback.data.replace("letter_", "")  # "letter_B" → "B"
+    await state.update_data(letter=letter)
+    await callback.message.edit_text(
+        f"🔍 Шаг 2 — Выбери марку на букву <b>{letter}</b>:",
         parse_mode="HTML",
+        reply_markup=make_select_keyboard(letter),
     )
-    await state.set_state(SearchForm.model)
+    await state.set_state(SearchForm.make_select)
+    await callback.answer()
 
 
-@router.message(SearchForm.model)
-async def process_model(message: Message, state: FSMContext):
-    await state.update_data(model=message.text.strip())
-    await message.answer(
-        "Шаг 3/6 — Введи <b>год выпуска от</b>:\n"
-        "<i>Например: 2018</i>",
+@router.callback_query(F.data == "make_back", SearchForm.make_select)
+async def make_back(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(
+        "🔍 Шаг 1 — Выбери первую букву марки:",
+        reply_markup=make_letter_keyboard(),
+    )
+    await state.set_state(SearchForm.make_letter)
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("make_"), SearchForm.make_select)
+async def choose_make(callback: CallbackQuery, state: FSMContext):
+    make = callback.data.replace("make_", "")  # "make_BMW" → "BMW"
+    await state.update_data(make=make)
+    await callback.message.edit_text(
+        f"🔍 Шаг 3 — Выбери модель <b>{make}</b>:",
         parse_mode="HTML",
-        reply_markup=skip_keyboard(),
+        reply_markup=model_select_keyboard(make),
+    )
+    await state.set_state(SearchForm.model_select)
+    await callback.answer()
+
+
+@router.callback_query(F.data == "model_back", SearchForm.model_select)
+async def model_back(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    letter = data.get("letter", "A")
+    await callback.message.edit_text(
+        f"🔍 Шаг 2 — Выбери марку на букву <b>{letter}</b>:",
+        parse_mode="HTML",
+        reply_markup=make_select_keyboard(letter),
+    )
+    await state.set_state(SearchForm.make_select)
+    await callback.answer()
+
+
+@router.callback_query(
+    F.data.startswith("model_") | (F.data == "model_all"),
+    SearchForm.model_select
+)
+async def choose_model(callback: CallbackQuery, state: FSMContext):
+    if callback.data == "model_all":
+        model = ""  # Пустая строка = все модели
+    else:
+        model = callback.data.replace("model_", "")  # "model_Golf" → "Golf"
+    
+    await state.update_data(model=model)
+    data = await state.get_data()
+    make = data.get("make", "")
+    
+    await callback.message.edit_text(
+        f"✅ Марка: <b>{make}</b> | Модель: <b>{model or 'Все'}</b>\n\n"
+        f"📅 Шаг 4 — Введи год выпуска <b>от</b>:\n<i>Например: 2018</i>",
+        parse_mode="HTML",
+        reply_markup=None,
     )
     await state.set_state(SearchForm.year_from)
+    await callback.answer()
+
 
 
 @router.message(SearchForm.year_from)
@@ -196,11 +252,10 @@ async def restart_search(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer(
-        "🔄 Начинаем заново!\n\n"
-        "Шаг 1/6 — Введи <b>марку</b> автомобиля:",
-        parse_mode="HTML",
+        "🔍 Шаг 1 — Выбери первую букву марки:",
+        reply_markup=make_letter_keyboard(),
     )
-    await state.set_state(SearchForm.make)
+    await state.set_state(SearchForm.make_letter)
     await callback.answer()
 
 # ─────────────────────────────────────────
@@ -328,10 +383,8 @@ async def action_refresh(callback: CallbackQuery):
 async def action_new_search(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer(
-        "🔍 Настраиваем новый поиск!\n\n"
-        "Шаг 1/6 — Введи <b>марку</b> автомобиля:\n"
-        "<i>Например: BMW, Volkswagen, Toyota</i>",
-        parse_mode="HTML",
+        "🔍 Шаг 1 — Выбери первую букву марки:",
+        reply_markup=make_letter_keyboard(),
     )
-    await state.set_state(SearchForm.make)
+    await state.set_state(SearchForm.make_letter)
     await callback.answer()

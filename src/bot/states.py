@@ -2,9 +2,12 @@ from aiogram.fsm.state import State, StatesGroup
 
 
 class SearchForm(StatesGroup):
-    make        = State()   # Шаг 1 — Марка
-    model       = State()   # Шаг 2 — Модель
-    year_from   = State()   # Шаг 3 — Год от
-    year_to     = State()   # Шаг 4 — Год до
-    price_max   = State()   # Шаг 5 — Максимальная цена
-    mileage_max = State()   # Шаг 6 — Максимальный пробег
+    make_letter  = State()   # Шаг 1 — Выбор буквы
+    make_select  = State()   # Шаг 2 — Выбор марки
+    model_select = State()   # Шаг 3 — Выбор модели
+    year_from    = State()   # Шаг 4 — Год от
+    year_to      = State()   # Шаг 5 — Год до
+    price_min    = State()   # Шаг 6 — Минимальная цена
+    price_max    = State()   # Шаг 7 — Максимальная цена
+    mileage_min  = State()   # Шаг 8 — Минимальный пробег
+    mileage_max  = State()   # Шаг 9 — Максимальный пробег

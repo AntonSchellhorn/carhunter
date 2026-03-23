@@ -80,3 +80,56 @@ def interval_keyboard(selected: int):
             InlineKeyboardButton(text=f"{check(1440)} 24 часа", callback_data="interval_1440"),
         ],
     ])
+
+def make_letter_keyboard():
+    """Клавиатура выбора первой буквы марки."""
+    from makes import MAKES
+    
+    # Собираем уникальные первые буквы
+    letters = sorted(set(make[0].upper() for make in MAKES.keys()))
+    
+    # Разбиваем на ряды по 5 кнопок
+    rows = []
+    row = []
+    for i, letter in enumerate(letters):
+        row.append(InlineKeyboardButton(text=letter, callback_data=f"letter_{letter}"))
+        if len(row) == 5:
+            rows.append(row)
+            row = []
+    if row:
+        rows.append(row)
+    
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def make_select_keyboard(letter: str):
+    """Клавиатура выбора марки по букве."""
+    from makes import MAKES
+    
+    makes = [make for make in MAKES.keys() if make[0].upper() == letter]
+    
+    rows = []
+    for make in sorted(makes):
+        rows.append([InlineKeyboardButton(text=make, callback_data=f"make_{make[:30]}")])
+    
+    rows.append([InlineKeyboardButton(text="◀️ Назад", callback_data="make_back")])
+    
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def model_select_keyboard(make: str):
+    """Клавиатура выбора модели."""
+    from makes import MAKES
+    
+    models = MAKES.get(make, [])
+    
+    rows = []
+    # Кнопка "Все модели" всегда первая
+    rows.append([InlineKeyboardButton(text="📋 Все модели", callback_data="model_all")])
+    
+    for model in models:
+        rows.append([InlineKeyboardButton(text=model, callback_data=f"model_{model[:30]}")])
+    
+    rows.append([InlineKeyboardButton(text="◀️ Назад", callback_data="model_back")])
+    
+    return InlineKeyboardMarkup(inline_keyboard=rows)
