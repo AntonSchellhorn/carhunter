@@ -27,6 +27,9 @@ def listing_keyboard():
             InlineKeyboardButton(text="⛔ Стоп",             callback_data="action_stop"),
             InlineKeyboardButton(text="🔄 Обновить сейчас", callback_data="action_refresh"),
             InlineKeyboardButton(text="🔍 Новый поиск",     callback_data="action_new_search"),
+        ],
+        [
+            InlineKeyboardButton(text="⚙️ Меню настроек",  callback_data="action_menu"),
         ]
     ])
 
@@ -133,3 +136,24 @@ def model_select_keyboard(make: str):
     rows.append([InlineKeyboardButton(text="◀️ Назад", callback_data="model_back")])
     
     return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def settings_keyboard():
+    """Меню настроек."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🌍 Язык",             callback_data="menu_language"),
+            InlineKeyboardButton(text="🌐 Сайты",            callback_data="menu_sites"),
+        ],
+        [
+            InlineKeyboardButton(text="⏱ Интервал",         callback_data="menu_interval"),
+            InlineKeyboardButton(text="📊 Статус",           callback_data="menu_status"),
+        ],
+        [
+            InlineKeyboardButton(text="🔍 Новый поиск",      callback_data="action_new_search"),
+            InlineKeyboardButton(text="⛔ Стоп",             callback_data="action_stop"),
+        ],
+        [
+            InlineKeyboardButton(text="❌ Закрыть",          callback_data="menu_close"),
+        ]
+    ])

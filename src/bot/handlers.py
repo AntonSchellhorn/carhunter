@@ -5,10 +5,10 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 
 from scheduler import check_new_listings
 from keyboards import (
-confirm_keyboard, skip_keyboard, 
-listing_keyboard, language_keyboard, sites_keyboard, 
-interval_keyboard, make_letter_keyboard, make_select_keyboard, 
-model_select_keyboard
+confirm_keyboard, skip_keyboard,
+listing_keyboard, language_keyboard, sites_keyboard,
+interval_keyboard, make_letter_keyboard, make_select_keyboard,
+model_select_keyboard, settings_keyboard
 )
 from database import (
 save_search, get_search, set_active, 
@@ -315,6 +315,74 @@ async def choose_interval(callback: CallbackQuery):
     await set_interval(user_id, minutes)
     await callback.message.edit_reply_markup(reply_markup=interval_keyboard(minutes))
     await callback.answer(f"✅ Интервал сохранён: {minutes} мин")
+
+
+# ─────────────────────────────────────────
+#  Меню настроек
+# ─────────────────────────────────────────
+@router.callback_query(F.data == "action_menu")
+async def action_menu(callback: CallbackQuery):
+    await callback.message.answer(
+        "⚙️ <b>Меню настроек</b>",
+        parse_mode="HTML",
+        reply_markup=settings_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "menu_language")
+async def menu_language(callback: CallbackQuery):
+    await callback.message.edit_text(
+        "🌍 Выбери язык / Sprache wählen / Choose language:",
+        reply_markup=language_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "menu_sites")
+async def menu_sites(callback: CallbackQuery):
+    selected = await get_sites(callback.from_user.id)
+    await callback.message.edit_text(
+        "🌐 Выбери сайты для поиска:",
+        reply_markup=sites_keyboard(selected),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "menu_interval")
+async def menu_interval(callback: CallbackQuery):
+    selected = await get_interval(callback.from_user.id)
+    await callback.message.edit_text(
+        "⏱ Выбери интервал проверки:",
+        reply_markup=interval_keyboard(selected),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "menu_status")
+async def menu_status(callback: CallbackQuery):
+    search = await get_search(callback.from_user.id)
+    if not search:
+        await callback.answer("📭 Нет активного поиска!")
+        return
+    status_icon = "🟢 Активен" if search["is_active"] else "🔴 Остановлен"
+    await callback.message.edit_text(
+        f"<b>Статус: {status_icon}</b>\n\n"
+        f"🚘 {search['make']} {search['model']}\n"
+        f"📅 {search['year_from'] or '—'} — {search['year_to'] or '—'}\n"
+        f"💶 до {search['price_max'] or '—'} €\n"
+        f"🛣 до {search['mileage_max'] or '—'} км",
+        parse_mode="HTML",
+        reply_markup=settings_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "menu_close")
+async def menu_close(callback: CallbackQuery):
+    await callback.message.delete()
+    await callback.answer()
+
 
 # ─────────────────────────────────────────
 #  /stop

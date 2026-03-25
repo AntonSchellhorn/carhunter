@@ -43,8 +43,8 @@
 - [x] Clear seen listings history on new search
 - [x] Fixed URL encoding for models with spaces (Golf Plus → golf-plus)
 - [x] Language column added to database (default: DE)
-- [ ] ⚙️ Menu button under each listing
-- [ ] Settings menu (language / sites / interval / parameters / status)
+- [x] ⚙️ Menu button under each listing
+- [x] Settings menu (language / sites / interval / parameters / status)
 
 ## Phase 4 — Multi-Platform Coverage 🔧
 - [ ] Parameter normalization across sites
