@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from database import init_db
 from handlers import router
 from scheduler import create_scheduler
-from database import get_all_active_searches
+from database import get_all_active_searches, reset_all_last_checked
 from keyboards import listing_keyboard
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
@@ -36,6 +36,7 @@ async def main():
     print("=== ВОШЛИ В MAIN ===")
     print("🗄 Инициализация базы данных...")
     await init_db()
+    await reset_all_last_checked()
 
     print("⏰ Запуск планировщика...")
     scheduler = create_scheduler(bot)

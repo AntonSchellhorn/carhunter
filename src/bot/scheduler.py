@@ -43,6 +43,8 @@ async def check_new_listings(bot: Bot):
             year_to=search["year_to"],
             price_max=search["price_max"],
             mileage_max=search["mileage_max"],
+            zip_code=search.get("zip_code"),
+            radius=search.get("radius"),
         )
 
         new_count = 0

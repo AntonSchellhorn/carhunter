@@ -3,7 +3,8 @@ import re
 
 async def scrape_autoscout24(make: str, model: str, year_from: int = None,
                               year_to: int = None, price_max: int = None,
-                              mileage_max: int = None) -> list[dict]:
+                              mileage_max: int = None, zip_code: str = None,
+                              radius: int = None) -> list[dict]:
     results = []
 
     url = f"https://www.autoscout24.de/lst/{make.lower()}/{model.lower()}?sort=age&desc=1"
@@ -15,6 +16,8 @@ async def scrape_autoscout24(make: str, model: str, year_from: int = None,
         url += f"&priceto={price_max}"
     if mileage_max:
         url += f"&kmto={mileage_max}"
+    if zip_code and radius:
+        url += f"&zip={zip_code}&zipr={radius}"    
 
     print(f"🔍 Парсим URL: {url}")
 

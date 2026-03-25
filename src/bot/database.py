@@ -54,13 +54,25 @@ async def init_db():
         except Exception:
             pass  # Колонка уже есть — всё хорошо
 
-async def save_search(user_id, make, model, year_from, year_to, price_max, mileage_max):
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN zip_code TEXT DEFAULT ''")
+            await db.commit()
+        except Exception:
+            pass
+
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN radius INTEGER DEFAULT 0")
+            await db.commit()
+        except Exception:
+            pass
+
+async def save_search(user_id, make, model, year_from, year_to, price_max, mileage_max, zip_code=None, radius=0):
     """Сохраняет или обновляет настройки поиска пользователя."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
-            INSERT INTO searches
-                (user_id, make, model, year_from, year_to, price_max, mileage_max, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+         INSERT INTO searches
+                (user_id, make, model, year_from, year_to, price_max, mileage_max, is_active, zip_code, radius)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
                 make        = excluded.make,
                 model       = excluded.model,
@@ -68,12 +80,21 @@ async def save_search(user_id, make, model, year_from, year_to, price_max, milea
                 year_to     = excluded.year_to,
                 price_max   = excluded.price_max,
                 mileage_max = excluded.mileage_max,
-                is_active   = 1
-        """, (user_id, make, model, year_from, year_to, price_max, mileage_max))
+                is_active   = 1,
+                zip_code    = excluded.zip_code,
+                radius      = excluded.radius
+        """, (user_id, make, model, year_from, year_to, price_max, mileage_max, zip_code, radius))
         await db.commit()
         # Очищаем историю просмотренных при новом поиске
         await db.execute(
             "DELETE FROM seen_listings WHERE user_id = ?",
+            (user_id,)
+        )
+        await db.commit()
+
+        # Сбрасываем время — чтобы следующая проверка была немедленной
+        await db.execute(
+            "UPDATE searches SET last_checked_at = 0 WHERE user_id = ?",
             (user_id,)
         )
         await db.commit()
@@ -202,4 +223,38 @@ async def update_last_checked(user_id):
             "UPDATE searches SET last_checked_at = ? WHERE user_id = ?",
             (time.time(), user_id)
         )
-        await db.commit()            
+        await db.commit()   
+
+
+async def get_zip(user_id):
+    """Возвращает почтовый индекс и радиус пользователя."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute(
+            "SELECT zip_code, radius FROM searches WHERE user_id = ?", (user_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                return {"zip_code": row[0] or "", "radius": row[1] or 0}
+            return {"zip_code": "", "radius": 0}
+
+
+async def set_zip(user_id, zip_code: str, radius: int):
+    """Сохраняет почтовый индекс и радиус пользователя."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO searches (user_id, zip_code, radius)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                zip_code = excluded.zip_code,
+                radius   = excluded.radius
+        """, (user_id, zip_code, radius))
+        await db.commit()
+
+
+async def reset_all_last_checked():
+    """Сбрасывает время проверки для всех активных поисков при рестарте."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "UPDATE searches SET last_checked_at = 0 WHERE is_active = 1"
+        )
+        await db.commit()       

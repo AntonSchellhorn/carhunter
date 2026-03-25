@@ -157,3 +157,19 @@ def settings_keyboard():
             InlineKeyboardButton(text="❌ Закрыть",          callback_data="menu_close"),
         ]
     ])
+
+
+def radius_keyboard():
+    """Клавиатура выбора радиуса поиска."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="10 км",  callback_data="radius_10"),
+            InlineKeyboardButton(text="25 км",  callback_data="radius_25"),
+            InlineKeyboardButton(text="50 км",  callback_data="radius_50"),
+        ],
+        [
+            InlineKeyboardButton(text="100 км", callback_data="radius_100"),
+            InlineKeyboardButton(text="200 км", callback_data="radius_200"),
+            InlineKeyboardButton(text="🌍 Вся Германия", callback_data="radius_0"),
+        ],
+    ])

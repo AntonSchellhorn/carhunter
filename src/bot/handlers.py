@@ -8,11 +8,12 @@ from keyboards import (
 confirm_keyboard, skip_keyboard,
 listing_keyboard, language_keyboard, sites_keyboard,
 interval_keyboard, make_letter_keyboard, make_select_keyboard,
-model_select_keyboard, settings_keyboard
+model_select_keyboard, settings_keyboard, radius_keyboard
 )
 from database import (
 save_search, get_search, set_active, 
-set_language, get_language, get_sites, set_sites, get_interval, set_interval
+set_language, get_language, get_sites, set_sites,
+get_interval, set_interval,get_zip, set_zip
 )
 from locales import t
 from states import SearchForm
@@ -199,22 +200,68 @@ async def process_mileage_max(message: Message, state: FSMContext):
             return
         await state.update_data(mileage_max=int(message.text))
 
+    await message.answer(
+        "📍 Шаг 10 — Введи <b>почтовый индекс</b> для поиска по радиусу:\n"
+        "<i>Например: 09111 (Хемниц)</i>\n\n"
+        "Или нажми Пропустить — будет поиск по всей Германии.",
+        parse_mode="HTML",
+        reply_markup=skip_keyboard(),
+    )
+    await state.set_state(SearchForm.zip_code)
+
+
+# ─────────────────────────────────────────
+#  Радиус поиска
+# ─────────────────────────────────────────
+@router.message(SearchForm.zip_code)
+async def process_zip_code(message: Message, state: FSMContext):
+    if message.text == "⏭ Пропустить":
+        await state.update_data(zip_code=None, radius=0)
+        await show_summary(message, state)
+        return
+
+    zip_code = message.text.strip()
+    if not zip_code.isdigit() or len(zip_code) != 5:
+        await message.answer("⚠️ Введи корректный немецкий индекс, например: <b>09111</b>", parse_mode="HTML")
+        return
+
+    await state.update_data(zip_code=zip_code)
+    await message.answer(
+        f"📍 Индекс: <b>{zip_code}</b>\n\nШаг 11 — Выбери радиус поиска:",
+        parse_mode="HTML",
+        reply_markup=radius_keyboard(),
+    )
+    await state.set_state(SearchForm.radius)
+
+
+@router.callback_query(F.data.startswith("radius_"), SearchForm.radius)
+async def process_radius(callback: CallbackQuery, state: FSMContext):
+    radius = int(callback.data.replace("radius_", ""))
+    await state.update_data(radius=radius)
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await show_summary(callback.message, state)
+    await callback.answer()
+
+
+async def show_summary(message: Message, state: FSMContext):
+    """Показывает итоговые параметры поиска."""
     data = await state.get_data()
+    zip_info = f"{data.get('zip_code')} (+{data.get('radius')} км)" if data.get('zip_code') else "Вся Германия"
     summary = (
         "✅ <b>Параметры поиска:</b>\n\n"
-        f"🚘 Марка:     <b>{data['make']}</b>\n"
-        f"🔖 Модель:    <b>{data['model']}</b>\n"
+        f"🚘 Марка:     <b>{data.get('make') or '—'}</b>\n"
+        f"🔖 Модель:    <b>{data.get('model') or 'Все'}</b>\n"
         f"📅 Год от:    <b>{data.get('year_from') or '—'}</b>\n"
         f"📅 Год до:    <b>{data.get('year_to') or '—'}</b>\n"
         f"💶 Цена до:   <b>{data.get('price_max') or '—'} €</b>\n"
         f"🛣 Пробег до: <b>{data.get('mileage_max') or '—'} км</b>\n"
+        f"📍 Район:     <b>{zip_info}</b>\n"
     )
     await message.answer(
         summary,
         parse_mode="HTML",
         reply_markup=confirm_keyboard(),
     )
-
 
 # ─────────────────────────────────────────
 #  Кнопка "Запустить поиск"
@@ -230,6 +277,8 @@ async def confirm_search(callback: CallbackQuery, state: FSMContext):
         year_to=data.get("year_to"),
         price_max=data.get("price_max"),
         mileage_max=data.get("mileage_max"),
+        zip_code=data.get("zip_code"),
+        radius=data.get("radius", 0),
     )
     await state.clear()
     await callback.message.edit_reply_markup(reply_markup=None)

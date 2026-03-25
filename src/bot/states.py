@@ -11,3 +11,5 @@ class SearchForm(StatesGroup):
     price_max    = State()   # Шаг 7 — Максимальная цена
     mileage_min  = State()   # Шаг 8 — Минимальный пробег
     mileage_max  = State()   # Шаг 9 — Максимальный пробег
+    zip_code     = State()   # Шаг 10 — Почтовый индекс
+    radius       = State()   # Шаг 11 — Радиус поиска (км)
