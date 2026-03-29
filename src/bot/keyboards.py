@@ -173,3 +173,84 @@ def radius_keyboard():
             InlineKeyboardButton(text="🌍 Вся Германия", callback_data="radius_0"),
         ],
     ])
+
+
+def body_type_keyboard():
+    """Клавиатура выбора типа кузова."""
+    from search_params import BODY_TYPES
+    rows = []
+    row = []
+    for body in BODY_TYPES.keys():
+        row.append(InlineKeyboardButton(text=body, callback_data=f"body_{body[:30]}"))
+        if len(row) == 2:
+            rows.append(row)
+            row = []
+    if row:
+        rows.append(row)
+    rows.append([InlineKeyboardButton(text="⏭ Пропустить", callback_data="body_skip")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def fuel_type_keyboard():
+    """Клавиатура выбора типа топлива."""
+    from search_params import FUEL_TYPES
+    rows = []
+    row = []
+    for fuel in FUEL_TYPES.keys():
+        row.append(InlineKeyboardButton(text=fuel, callback_data=f"fuel_{fuel[:30]}"))
+        if len(row) == 2:
+            rows.append(row)
+            row = []
+    if row:
+        rows.append(row)
+    rows.append([InlineKeyboardButton(text="⏭ Пропустить", callback_data="fuel_skip")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def transmission_keyboard():
+    """Клавиатура выбора коробки передач."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🔧 Schaltgetriebe", callback_data="trans_Schaltgetriebe"),
+            InlineKeyboardButton(text="⚙️ Automatik",      callback_data="trans_Automatik"),
+        ],
+        [
+            InlineKeyboardButton(text="⏭ Пропустить", callback_data="trans_skip"),
+        ]
+    ])
+
+
+def condition_keyboard():
+    """Клавиатура выбора состояния автомобиля."""
+    from search_params import CONDITION
+    rows = []
+    for cond in CONDITION.keys():
+        rows.append([InlineKeyboardButton(text=cond, callback_data=f"cond_{cond[:30]}")])
+    rows.append([InlineKeyboardButton(text="⏭ Пропустить", callback_data="cond_skip")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def seller_type_keyboard():
+    """Клавиатура выбора типа продавца."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="👤 Частник",  callback_data="seller_private"),
+            InlineKeyboardButton(text="🏢 Дилер",   callback_data="seller_dealer"),
+        ],
+        [
+            InlineKeyboardButton(text="⏭ Пропустить", callback_data="seller_skip"),
+        ]
+    ])
+
+
+def damage_keyboard():
+    """Клавиатура выбора аварийности."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="✅ Unfallfrei",  callback_data="damage_Unfallfrei"),
+            InlineKeyboardButton(text="⚠️ Mit Schäden", callback_data="damage_Mit Schäden"),
+        ],
+        [
+            InlineKeyboardButton(text="⏭ Пропустить", callback_data="damage_skip"),
+        ]
+    ])

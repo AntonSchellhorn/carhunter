@@ -8,7 +8,9 @@ from keyboards import (
 confirm_keyboard, skip_keyboard,
 listing_keyboard, language_keyboard, sites_keyboard,
 interval_keyboard, make_letter_keyboard, make_select_keyboard,
-model_select_keyboard, settings_keyboard, radius_keyboard
+model_select_keyboard, settings_keyboard, radius_keyboard,
+body_type_keyboard, fuel_type_keyboard, transmission_keyboard,
+condition_keyboard, seller_type_keyboard, damage_keyboard
 )
 from database import (
 save_search, get_search, set_active, 
@@ -201,13 +203,136 @@ async def process_mileage_max(message: Message, state: FSMContext):
         await state.update_data(mileage_max=int(message.text))
 
     await message.answer(
-        "📍 Шаг 10 — Введи <b>почтовый индекс</b> для поиска по радиусу:\n"
-        "<i>Например: 09111 (Хемниц)</i>\n\n"
-        "Или нажми Пропустить — будет поиск по всей Германии.",
+        "🚗 Шаг 10 — Выбери <b>тип кузова</b>:",
         parse_mode="HTML",
+        reply_markup=body_type_keyboard(),
+    )
+    await state.set_state(SearchForm.body_type)
+
+
+# ─────────────────────────────────────────
+#  Тип кузова
+# ─────────────────────────────────────────
+@router.callback_query(SearchForm.body_type)
+async def process_body_type(callback: CallbackQuery, state: FSMContext):
+    if callback.data != "body_skip":
+        body = callback.data.replace("body_", "")
+        await state.update_data(body_type=body)
+    else:
+        await state.update_data(body_type=None)
+
+    await callback.message.edit_text(
+        "⛽ Шаг 11 — Выбери <b>тип топлива</b>:",
+        parse_mode="HTML",
+        reply_markup=fuel_type_keyboard(),
+    )
+    await state.set_state(SearchForm.fuel_type)
+    await callback.answer()
+
+
+# ─────────────────────────────────────────
+#  Тип топлива
+# ─────────────────────────────────────────
+@router.callback_query(SearchForm.fuel_type)
+async def process_fuel_type(callback: CallbackQuery, state: FSMContext):
+    if callback.data != "fuel_skip":
+        fuel = callback.data.replace("fuel_", "")
+        await state.update_data(fuel_type=fuel)
+    else:
+        await state.update_data(fuel_type=None)
+
+    await callback.message.edit_text(
+        "⚙️ Шаг 12 — Выбери <b>коробку передач</b>:",
+        parse_mode="HTML",
+        reply_markup=transmission_keyboard(),
+    )
+    await state.set_state(SearchForm.transmission)
+    await callback.answer()
+
+
+# ─────────────────────────────────────────
+#  Коробка передач
+# ─────────────────────────────────────────
+@router.callback_query(SearchForm.transmission)
+async def process_transmission(callback: CallbackQuery, state: FSMContext):
+    if callback.data != "trans_skip":
+        trans = callback.data.replace("trans_", "")
+        await state.update_data(transmission=trans)
+    else:
+        await state.update_data(transmission=None)
+
+    await callback.message.edit_text(
+        "🏷 Шаг 13 — Выбери <b>состояние</b> автомобиля:",
+        parse_mode="HTML",
+        reply_markup=condition_keyboard(),
+    )
+    await state.set_state(SearchForm.condition)
+    await callback.answer()
+
+
+# ─────────────────────────────────────────
+#  Состояние автомобиля
+# ─────────────────────────────────────────
+@router.callback_query(SearchForm.condition)
+async def process_condition(callback: CallbackQuery, state: FSMContext):
+    if callback.data != "cond_skip":
+        cond = callback.data.replace("cond_", "")
+        await state.update_data(condition=cond)
+    else:
+        await state.update_data(condition=None)
+
+    await callback.message.edit_text(
+        "👤 Шаг 14 — Выбери <b>тип продавца</b>:",
+        parse_mode="HTML",
+        reply_markup=seller_type_keyboard(),
+    )
+    await state.set_state(SearchForm.seller_type)
+    await callback.answer()
+
+
+# ─────────────────────────────────────────
+#  Тип продавца
+# ─────────────────────────────────────────
+@router.callback_query(SearchForm.seller_type)
+async def process_seller_type(callback: CallbackQuery, state: FSMContext):
+    if callback.data != "seller_skip":
+        seller = callback.data.replace("seller_", "")
+        await state.update_data(seller_type=seller)
+    else:
+        await state.update_data(seller_type=None)
+
+    await callback.message.edit_text(
+        "🔧 Шаг 15 — Аварийность:",
+        parse_mode="HTML",
+        reply_markup=damage_keyboard(),
+    )
+    await state.set_state(SearchForm.damage)
+    await callback.answer()
+
+
+# ─────────────────────────────────────────
+#  Аварийность
+# ─────────────────────────────────────────
+@router.callback_query(SearchForm.damage)
+async def process_damage(callback: CallbackQuery, state: FSMContext):
+    if callback.data != "damage_skip":
+        damage = callback.data.replace("damage_", "")
+        await state.update_data(damage=damage)
+    else:
+        await state.update_data(damage=None)
+
+    await callback.message.edit_text(
+        "📍 Шаг 16 — Введи <b>почтовый индекс</b> для поиска по радиусу:\n"
+        "<i>Например: 09111 (Хемниц)</i>",
+        parse_mode="HTML",
+        reply_markup=None,
+    )
+    await callback.message.answer(
+        "Или нажми Пропустить — поиск по всей Германии.",
         reply_markup=skip_keyboard(),
     )
     await state.set_state(SearchForm.zip_code)
+    await callback.answer()   
 
 
 # ─────────────────────────────────────────
@@ -256,7 +381,14 @@ async def show_summary(message: Message, state: FSMContext):
         f"💶 Цена до:   <b>{data.get('price_max') or '—'} €</b>\n"
         f"🛣 Пробег до: <b>{data.get('mileage_max') or '—'} км</b>\n"
         f"📍 Район:     <b>{zip_info}</b>\n"
+        f"🚗 Кузов:     <b>{data.get('body_type') or '—'}</b>\n"
+        f"⛽ Топливо:   <b>{data.get('fuel_type') or '—'}</b>\n"
+        f"⚙️ Коробка:   <b>{data.get('transmission') or '—'}</b>\n"
+        f"🏷 Состояние: <b>{data.get('condition') or '—'}</b>\n"
+        f"👤 Продавец:  <b>{data.get('seller_type') or '—'}</b>\n"
+        f"🔧 Аварийность: <b>{data.get('damage') or '—'}</b>\n"
     )
+    
     await message.answer(
         summary,
         parse_mode="HTML",
@@ -270,15 +402,21 @@ async def show_summary(message: Message, state: FSMContext):
 async def confirm_search(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     await save_search(
-        user_id=callback.from_user.id,
-        make=data["make"],
-        model=data["model"],
-        year_from=data.get("year_from"),
-        year_to=data.get("year_to"),
-        price_max=data.get("price_max"),
-        mileage_max=data.get("mileage_max"),
-        zip_code=data.get("zip_code"),
-        radius=data.get("radius", 0),
+            user_id=callback.from_user.id,
+            make=data["make"],
+            model=data["model"],
+            year_from=data.get("year_from"),
+            year_to=data.get("year_to"),
+            price_max=data.get("price_max"),
+            mileage_max=data.get("mileage_max"),
+            zip_code=data.get("zip_code"),
+            radius=data.get("radius", 0),
+            body_type=data.get("body_type"),
+            fuel_type=data.get("fuel_type"),
+            transmission=data.get("transmission"),
+            condition=data.get("condition"),
+            seller_type=data.get("seller_type"),
+            damage=data.get("damage"),
     )
     await state.clear()
     await callback.message.edit_reply_markup(reply_markup=None)

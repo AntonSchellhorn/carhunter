@@ -66,24 +66,66 @@ async def init_db():
         except Exception:
             pass
 
-async def save_search(user_id, make, model, year_from, year_to, price_max, mileage_max, zip_code=None, radius=0):
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN body_type TEXT DEFAULT ''")
+            await db.commit()
+        except Exception:
+            pass
+
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN fuel_type TEXT DEFAULT ''")
+            await db.commit()
+        except Exception:
+            pass
+
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN transmission TEXT DEFAULT ''")
+            await db.commit()
+        except Exception:
+            pass
+
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN condition TEXT DEFAULT ''")
+            await db.commit()
+        except Exception:
+            pass
+
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN seller_type TEXT DEFAULT ''")
+            await db.commit()
+        except Exception:
+            pass
+
+        try:
+            await db.execute("ALTER TABLE searches ADD COLUMN damage TEXT DEFAULT ''")
+            await db.commit()
+        except Exception:
+            pass
+
+async def save_search(user_id, make, model, year_from, year_to, price_max, mileage_max, zip_code=None, radius=0, body_type=None, fuel_type=None, transmission=None, condition=None, seller_type=None, damage=None):
     """Сохраняет или обновляет настройки поиска пользователя."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
-         INSERT INTO searches
-                (user_id, make, model, year_from, year_to, price_max, mileage_max, is_active, zip_code, radius)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+            INSERT INTO searches
+                (user_id, make, model, year_from, year_to, price_max, mileage_max, is_active, zip_code, radius, body_type, fuel_type, transmission, condition, seller_type, damage)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
-                make        = excluded.make,
-                model       = excluded.model,
-                year_from   = excluded.year_from,
-                year_to     = excluded.year_to,
-                price_max   = excluded.price_max,
-                mileage_max = excluded.mileage_max,
-                is_active   = 1,
-                zip_code    = excluded.zip_code,
-                radius      = excluded.radius
-        """, (user_id, make, model, year_from, year_to, price_max, mileage_max, zip_code, radius))
+                make         = excluded.make,
+                model        = excluded.model,
+                year_from    = excluded.year_from,
+                year_to      = excluded.year_to,
+                price_max    = excluded.price_max,
+                mileage_max  = excluded.mileage_max,
+                is_active    = 1,
+                zip_code     = excluded.zip_code,
+                radius       = excluded.radius,
+                body_type    = excluded.body_type,
+                fuel_type    = excluded.fuel_type,
+                transmission = excluded.transmission,
+                condition    = excluded.condition,
+                seller_type  = excluded.seller_type,
+                damage       = excluded.damage
+        """, (user_id, make, model, year_from, year_to, price_max, mileage_max, zip_code, radius, body_type, fuel_type, transmission, condition, seller_type, damage))
         await db.commit()
         # Очищаем историю просмотренных при новом поиске
         await db.execute(
