@@ -5,7 +5,7 @@ from aiogram import Bot
 from database import get_all_active_searches, add_seen_listing, update_last_checked
 import time
 from keyboards import listing_keyboard
-from scraper import scrape_autoscout24
+from scraper import scrape_autoscout24, scrape_mobile_de
 
 
 
@@ -35,17 +35,45 @@ async def check_new_listings(bot: Bot):
 
         user_id = search["user_id"]
 
-        # Запускаем парсер с параметрами этого пользователя
-        listings = await scrape_autoscout24(
-            make=search["make"],
-            model=search["model"],
-            year_from=search["year_from"],
-            year_to=search["year_to"],
-            price_max=search["price_max"],
-            mileage_max=search["mileage_max"],
-            zip_code=search.get("zip_code"),
-            radius=search.get("radius"),
-        )
+        # Определяем какие сайты выбрал пользователь
+        sites = search.get("sites") or "autoscout24"
+
+        listings = []
+
+        # Запускаем парсер для каждого выбранного сайта
+        if "autoscout24" in sites:
+            as24 = await scrape_autoscout24(
+                make=search["make"],
+                model=search["model"],
+                year_from=search["year_from"],
+                year_to=search["year_to"],
+                price_max=search["price_max"],
+                mileage_max=search["mileage_max"],
+                zip_code=search.get("zip_code"),
+                radius=search.get("radius"),
+            )
+            listings.extend(as24)
+
+        if "mobile" in sites:
+            # Mobile.de — минимальный интервал 30 минут (защита от блокировки)
+            MOBILE_MIN_INTERVAL = 30 * 60
+            last_mobile = search.get("last_mobile_checked_at") or 0
+            elapsed_mobile = time.time() - last_mobile
+
+            if elapsed_mobile >= MOBILE_MIN_INTERVAL:
+                mob = await scrape_mobile_de(
+                    make=search["make"],
+                    model=search["model"],
+                    year_from=search["year_from"],
+                    year_to=search["year_to"],
+                    price_max=search["price_max"],
+                    mileage_max=search["mileage_max"],
+                    zip_code=search.get("zip_code"),
+                    radius=search.get("radius"),
+                )
+                listings.extend(mob)
+            else:
+                print(f"⏳ Mobile.de: ещё {int((MOBILE_MIN_INTERVAL - elapsed_mobile) / 60)} мин до проверки")
 
         new_count = 0
 
@@ -85,7 +113,7 @@ def create_scheduler(bot: Bot) -> AsyncIOScheduler:
     scheduler.add_job(
         check_new_listings,
         trigger="interval",
-        minutes=1,
+        minutes=5,
         kwargs={"bot": bot},
         next_run_time=datetime.now(),
     )
